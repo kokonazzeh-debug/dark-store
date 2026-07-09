@@ -1,0 +1,124 @@
+{
+  "storeName": "𝑫𝑨𝑹𝑲 𝑺𝑻Ø𝑹𝑬",
+  "currency": "جنيه",
+  "contact": {
+    "whatsapp": "01000000000",
+    "facebook": "https://facebook.com/darkstore"
+  },
+  "games": [
+    {
+      "id": "pubg",
+      "name": "PUBG Mobile",
+      "icon": "🎮",
+      "color": "#ff6a00",
+      "categories": [
+        {
+          "name": "شحن UC",
+          "products": [
+            { "name": "60 UC + 10", "amount": "70 UC", "price": 45, "popular": false },
+            { "name": "180 UC + 25", "amount": "205 UC", "price": 120, "popular": false },
+            { "name": "325 UC + 60", "amount": "385 UC", "price": 210, "popular": true },
+            { "name": "660 UC + 130", "amount": "790 UC", "price": 410, "popular": false },
+            { "name": "1800 UC + 385", "amount": "2185 UC", "price": 1050, "popular": false },
+            { "name": "3850 UC + 850", "amount": "4700 UC", "price": 2100, "popular": true },
+            { "name": "8100 UC + 2100", "amount": "10200 UC", "price": 4100, "popular": false }
+          ]
+        },
+        {
+          "name": "Royale Pass",
+          "products": [
+            { "name": "Royale Pass عادي", "amount": "RP عادي", "price": 150, "popular": false },
+            { "name": "Royale Pass نخبة", "amount": "RP نخبة", "price": 350, "popular": true },
+            { "name": "Royale Pass + 25 Level", "amount": "RP + 25 لفل", "price": 550, "popular": false }
+          ]
+        },
+        {
+          "name": "عروض خاصة",
+          "products": [
+            { "name": "باقة الـ Weekly", "amount": "60 UC يومياً", "price": 65, "popular": false },
+            { "name": "باقة الـ Monthly", "amount": "شحن يومي", "price": 250, "popular": true },
+            { "name": "باقة الـ RP + UC", "amount": "RP + 200 UC", "price": 400, "popular": false },
+            { "name": "كود 24 ساعة", "amount": "شحن سريع", "price": 500, "popular": false }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fifa",
+      "name": "FIFA Mobile / FC",
+      "icon": "⚽",
+      "color": "#00ff88",
+      "categories": [
+        {
+          "name": "FIFA Points",
+          "products": [
+            { "name": "105 Points", "amount": "105 Points", "price": 15, "popular": false },
+            { "name": "520 Points", "amount": "520 Points", "price": 65, "popular": false },
+            { "name": "1050 Points", "amount": "1050 Points", "price": 120, "popular": true },
+            { "name": "2150 Points", "amount": "2150 Points", "price": 240, "popular": false },
+            { "name": "4350 Points", "amount": "4350 Points", "price": 470, "popular": false },
+            { "name": "8250 Points", "amount": "8250 Points", "price": 850, "popular": true },
+            { "name": "17000 Points", "amount": "17000 Points", "price": 1700, "popular": false }
+          ]
+        },
+        {
+          "name": "عملات (Coins)",
+          "products": [
+            { "name": "1 مليون Coin", "amount": "1M Coins", "price": 80, "popular": false },
+            { "name": "5 مليون Coin", "amount": "5M Coins", "price": 350, "popular": true },
+            { "name": "10 مليون Coin", "amount": "10M Coins", "price": 600, "popular": false },
+            { "name": "25 مليون Coin", "amount": "25M Coins", "price": 1350, "popular": false },
+            { "name": "50 مليون Coin", "amount": "50M Coins", "price": 2400, "popular": true },
+            { "name": "100 مليون Coin", "amount": "100M Coins", "price": 4200, "popular": false }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "freefire",
+      "name": "Free Fire",
+      "icon": "🔫",
+      "color": "#ff4444",
+      "categories": [
+        {
+          "name": "شحن Diamonds",
+          "products": [
+            { "name": "100 Diamonds", "amount": "100 💎", "price": 12, "popular": false },
+            { "name": "310 Diamonds", "amount": "310 💎", "price": 35, "popular": false },
+            { "name": "520 Diamonds", "amount": "520 💎", "price": 55, "popular": true },
+            { "name": "1060 Diamonds", "amount": "1060 💎", "price": 110, "popular": false },
+            { "name": "2180 Diamonds", "amount": "2180 💎", "price": 210, "popular": false },
+            { "name": "5600 Diamonds", "amount": "5600 💎", "price": 520, "popular": true },
+            { "name": "11500 Diamonds", "amount": "11500 💎", "price": 1000, "popular": false }
+          ]
+        },
+        {
+          "name": "Membership",
+          "products": [
+            { "name": "Weekly Membership", "amount": "أسبوعي", "price": 45, "popular": false },
+            { "name": "Monthly Membership", "amount": "شهري", "price": 120, "popular": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "codm",
+      "name": "Call of Duty Mobile",
+      "icon": "⚔️",
+      "color": "#ffaa00",
+      "categories": [
+        {
+          "name": "شحن CP",
+          "products": [
+            { "name": "80 CP", "amount": "80 CP", "price": 12, "popular": false },
+            { "name": "420 CP", "amount": "420 CP", "price": 55, "popular": false },
+            { "name": "880 CP", "amount": "880 CP", "price": 110, "popular": true },
+            { "name": "2400 CP", "amount": "2400 CP", "price": 280, "popular": false },
+            { "name": "5000 CP", "amount": "5000 CP", "price": 550, "popular": true },
+            { "name": "10800 CP", "amount": "10800 CP", "price": 1100, "popular": false }
+          ]
+        }
+      ]
+    }
+  ]
+}
