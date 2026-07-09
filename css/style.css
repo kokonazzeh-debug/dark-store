@@ -421,6 +421,15 @@ main {
   box-shadow: 0 8px 30px rgba(255, 106, 0, 0.5);
 }
 
+.buy-btn.glow-purple {
+  background: linear-gradient(135deg, var(--accent-purple), #4c1d95);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.buy-btn.glow-purple:hover {
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+}
+
 /* Footer */
 footer {
   position: relative;

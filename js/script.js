@@ -18,23 +18,25 @@ async function loadProducts() {
 }
 
 function renderGameTabs() {
+  const allItems = [...productsData.games, productsData.services];
   const container = document.getElementById('game-tabs');
-  container.innerHTML = productsData.games.map((g, i) => `
-    <button class="game-tab ${i === 0 ? 'active' : ''}" data-game="${g.id}">
-      <span class="tab-icon">${g.icon}</span> ${g.name}
+  container.innerHTML = allItems.map((item, i) => `
+    <button class="game-tab ${i === 0 ? 'active' : ''}" data-game="${item.id}">
+      <span class="tab-icon">${item.icon}</span> ${item.name}
     </button>
   `).join('');
 }
 
 function renderAllSections() {
+  const allItems = [...productsData.games, productsData.services];
   const container = document.getElementById('main-content');
-  container.innerHTML = productsData.games.map((g, i) => `
-    <section class="game-section ${i === 0 ? 'active' : ''}" data-game="${g.id}">
+  container.innerHTML = allItems.map((item, i) => `
+    <section class="game-section ${i === 0 ? 'active' : ''}" data-game="${item.id}">
       <div class="game-header">
-        <h2 class="game-title" style="color:${g.color}">${g.icon} ${g.name}</h2>
-        <p class="game-desc">أفضل أسعار شحن ${g.name} - ${productsData.storeName}</p>
+        <h2 class="game-title" style="color:${item.color}">${item.icon} ${item.name}</h2>
+        <p class="game-desc">${item.desc || `أفضل أسعار شحن ${item.name} - ${productsData.storeName}`}</p>
       </div>
-      ${g.categories.map(cat => `
+      ${item.categories.map(cat => `
         <div class="category">
           <h3 class="category-title">
             ${cat.name}
@@ -43,17 +45,17 @@ function renderAllSections() {
           <div class="products-grid">
             ${cat.products.map(p => {
               const isPopular = p.popular;
-              const btnClass = getBtnClass(g.id, isPopular);
+              const btnClass = getBtnClass(item.id, isPopular);
               const popClass = isPopular ? 'popular' : '';
+              const priceText = p.price === 0 ? 'حسب الاتفاق' : `${p.price} <span class="currency">${productsData.currency}</span>`;
+              const btnText = item.id === 'services' ? '💬 تواصل للطلب' : '🔥 اشتري الآن';
               return `
                 <div class="product-card ${popClass}">
                   <div class="product-name">${p.name}</div>
                   <div class="product-amount">${p.amount}</div>
-                  <div class="product-price">
-                    ${p.price} <span class="currency">${productsData.currency}</span>
-                  </div>
+                  <div class="product-price">${priceText}</div>
                   <button class="buy-btn ${btnClass}" onclick="buyProduct('${p.name}', ${p.price})">
-                    🔥 اشتري الآن
+                    ${btnText}
                   </button>
                 </div>
               `;
@@ -67,7 +69,7 @@ function renderAllSections() {
 
 function getBtnClass(gameId, isPopular) {
   if (isPopular) return 'glow-pink';
-  const map = { pubg: 'glow-orange', fifa: 'glow-green', freefire: 'glow-red', codm: 'glow-gold' };
+  const map = { pubg: 'glow-orange', fifa: 'glow-green', freefire: 'glow-red', codm: 'glow-gold', services: 'glow-purple' };
   return map[gameId] || '';
 }
 
@@ -84,7 +86,8 @@ function setupTabs() {
 }
 
 function buyProduct(name, price) {
-  const msg = `مرحباً، أريد شراء: ${name} بسعر ${price} ${productsData.currency}`;
+  const priceText = price === 0 ? 'حسب الاتفاق' : `${price} ${productsData.currency}`;
+  const msg = `مرحباً، أريد: ${name} (${priceText})`;
   const url = `https://wa.me/${productsData.contact.whatsapp}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 }
@@ -112,7 +115,6 @@ function renderFooter() {
   if (social) {
     social.innerHTML = `
       <a href="https://wa.me/${productsData.contact.whatsapp}" target="_blank" class="social-btn" title="واتساب">💬</a>
-      <a href="${productsData.contact.facebook}" target="_blank" class="social-btn" title="فيسبوك">📘</a>
     `;
   }
   const yearEl = document.getElementById('copyright-year');

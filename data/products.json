@@ -2,8 +2,7 @@
   "storeName": "𝑫𝑨𝑹𝑲 𝑺𝑻Ø𝑹𝑬",
   "currency": "جنيه",
   "contact": {
-    "whatsapp": "01000000000",
-    "facebook": "https://facebook.com/darkstore"
+    "whatsapp": "01503355489"
   },
   "games": [
     {
@@ -120,5 +119,43 @@
         }
       ]
     }
-  ]
+  ],
+  "services": {
+    "id": "services",
+    "name": "خدمات برمجية",
+    "icon": "💻",
+    "color": "#8b5cf6",
+    "desc": "خدمات برمجية احترافية بأسعار رمزية - اسكربتات، بوتات، مواقع، أدوات",
+    "categories": [
+      {
+        "name": "اسكربتات وبوتات",
+        "products": [
+          { "name": "سكربت بوت واتساب", "amount": "بوت واتساب كامل", "price": 100, "popular": true },
+          { "name": "سكربت بوت تليجرام", "amount": "بوت تليجرام كامل", "price": 100, "popular": true },
+          { "name": "سكربت بوت ديسكورد", "amount": "بوت ديسكورد", "price": 120, "popular": false },
+          { "name": "سكربت ترند الحب", "amount": "HTML ترند الحب", "price": 50, "popular": true },
+          { "name": "سكربت ترند عيد ميلاد", "amount": "HTML عيد ميلاد", "price": 50, "popular": false },
+          { "name": "سكربت ترند رومانسي", "amount": "HTML رومانسي", "price": 60, "popular": false },
+          { "name": "أداة برمجية جاهزة", "amount": "أداة حسب الطلب", "price": 80, "popular": false }
+        ]
+      },
+      {
+        "name": "مواقع وتطبيقات",
+        "products": [
+          { "name": "صفحة هبوط (Landing Page)", "amount": "صفحة واحدة", "price": 200, "popular": false },
+          { "name": "موقع متعدد الصفحات", "amount": "موقع كامل", "price": 500, "popular": true },
+          { "name": "متجر إلكتروني بسيط", "amount": "متجر كامل", "price": 800, "popular": false },
+          { "name": "لوحة تحكم (Dashboard)", "amount": "Dashboard", "price": 600, "popular": false }
+        ]
+      },
+      {
+        "name": "حسب الطلب",
+        "products": [
+          { "name": "أي خدمة برمجية", "amount": "حسب الطلب", "price": 0, "popular": true },
+          { "name": "تعديل على سكربت", "amount": "تعديل مخصص", "price": 0, "popular": false },
+          { "name": "استشارة برمجية", "amount": "جلسة استشارية", "price": 0, "popular": false }
+        ]
+      }
+    ]
+  }
 }
