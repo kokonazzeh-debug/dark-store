@@ -13,8 +13,18 @@ const DEFAULT_PAYMENTS = {
 
 async function loadProducts() {
   try {
-    const saved = localStorage.getItem('dark_products');
-    productsData = saved ? JSON.parse(saved) : await (await fetch('data/products.json')).json();
+    let ok = false;
+    try {
+      const res = await fetch('api/products');
+      if (res.ok) {
+        productsData = await res.json();
+        ok = true;
+      }
+    } catch (e) {}
+    if (!ok) {
+      const saved = localStorage.getItem('dark_products');
+      productsData = saved ? JSON.parse(saved) : await (await fetch('data/products.json')).json();
+    }
     renderGameTabs();
     renderAllSections();
     setupTabs();
@@ -299,20 +309,25 @@ function closeOrderModal() {
 // تحميل أرقام الدفع
 async function loadPaymentNumbers() {
   let payments = DEFAULT_PAYMENTS;
+  let apiOk = false;
   try {
     const res = await fetch('api/payments');
-    if (res.ok) payments = await res.json();
-  } catch (e) {}
-  try {
-    if (!payments.vodafone) {
-      const res = await fetch('data/payments.json');
-      if (res.ok) payments = await res.json();
+    if (res.ok) {
+      payments = await res.json();
+      apiOk = true;
     }
   } catch (e) {}
-  try {
-    const saved = localStorage.getItem('dark_payments');
-    if (saved) payments = { ...payments, ...JSON.parse(saved) };
-  } catch (e) {}
+  if (!apiOk) {
+    try {
+      const saved = localStorage.getItem('dark_payments');
+      if (saved) {
+        payments = { ...payments, ...JSON.parse(saved) };
+      } else {
+        const res = await fetch('data/payments.json');
+        if (res.ok) payments = await res.json();
+      }
+    } catch (e) {}
+  }
   document.getElementById('pay-vodafone').textContent = payments.vodafone || '-';
   document.getElementById('pay-orange').textContent = payments.orange || '-';
   document.getElementById('pay-instapay').textContent = payments.instapay || '-';

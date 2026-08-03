@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 𝑫𝑨𝑹𝑲 𝑺𝑻Ø𝑹𝑬 — Backend Server
-================================
-تشغيل:  python server.py
-ثم افتح المتصفح على: http://localhost:8000
-لوحة التحكم: http://localhost:8000/admin
+===============================
+التشغيل محلياً:        python server.py  -> http://localhost:8000
+لوحة التحكم:           http://localhost:8000/admin
+
+النشر على Render مجاناً:
+  1) اربط الريبو بمشروع Render (Web Service - Python)
+  2) build:  pip install -r requirements.txt
+  3) start:  python server.py
+  4) أضف متغير بيئة MONGODB_URI (رابط MongoDB Atlas) عشان البيانات تفضل محفوظة
 """
 import http.server
 import socketserver
@@ -15,18 +20,44 @@ import secrets
 import urllib.parse
 import datetime
 import base64
-import shutil
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
 PORT = int(os.environ.get('PORT', 8000))
 
+MONGODB_URI = os.environ.get('MONGODB_URI', '')
+DB_NAME = os.environ.get('DB_NAME', 'darkstore')
+
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # كلمات مرور الجلسات الصالحة
 TOKENS = set()
+
+# ---------- MongoDB (اختياري - قاعدة بيانات سحابية مجانية) ----------
+try:
+    import pymongo
+    from pymongo.server_api import ServerApi
+except ImportError:
+    pymongo = None
+
+_mongo_client = None
+
+
+def db_enabled():
+    return pymongo is not None and bool(MONGODB_URI)
+
+
+def mongo_client():
+    global _mongo_client
+    if _mongo_client is None:
+        _mongo_client = pymongo.MongoClient(MONGODB_URI, server_api=ServerApi('1'))
+    return _mongo_client
+
+
+def mongo_coll(name):
+    return mongo_client()[DB_NAME][name]
 
 
 # ---------- مساعدات ملفات JSON ----------
@@ -46,10 +77,6 @@ def default_payments():
     }
 
 
-def default_orders():
-    return {"orders": []}
-
-
 def load_json(name, default):
     path = os.path.join(DATA_DIR, name)
     if not os.path.exists(path):
@@ -66,6 +93,87 @@ def save_json(name, data):
     path = os.path.join(DATA_DIR, name)
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def load_products_file():
+    try:
+        with open(os.path.join(DATA_DIR, 'products.json'), 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_products_file(data):
+    save_json('products.json', data)
+
+
+# ---------- طبقة البيانات (MongoDB أو ملفات محلية) ----------
+def orders_load():
+    if db_enabled():
+        try:
+            return list(mongo_coll('orders').find({}, {'_id': 0}))
+        except Exception:
+            pass
+    return load_json('orders.json', {"orders": []})['orders']
+
+
+def orders_save(orders):
+    if db_enabled():
+        try:
+            coll = mongo_coll('orders')
+            coll.delete_many({})
+            if orders:
+                coll.insert_many(orders)
+            return
+        except Exception:
+            pass
+    save_json('orders.json', {"orders": orders})
+
+
+def payments_load():
+    if db_enabled():
+        try:
+            doc = mongo_coll('settings').find_one({'k': 'payments'})
+            if doc and doc.get('v'):
+                return doc['v']
+            return default_payments()
+        except Exception:
+            pass
+    return load_json('payments.json', default_payments())
+
+
+def payments_save(data):
+    if db_enabled():
+        try:
+            mongo_coll('settings').update_one({'k': 'payments'}, {'$set': {'v': data}}, upsert=True)
+            return
+        except Exception:
+            pass
+    save_json('payments.json', data)
+
+
+def products_load():
+    if db_enabled():
+        try:
+            doc = mongo_coll('settings').find_one({'k': 'products'})
+            if doc and doc.get('v'):
+                return doc['v']
+        except Exception:
+            pass
+    return load_products_file()
+
+
+def products_save(games, services):
+    current = load_products_file()
+    current['games'] = games
+    if services is not None:
+        current['services'] = services
+    save_products_file(current)
+    if db_enabled():
+        try:
+            mongo_coll('settings').update_one({'k': 'products'}, {'$set': {'v': current}}, upsert=True)
+        except Exception:
+            pass
 
 
 # ---------- المساعدات ----------
@@ -167,11 +275,17 @@ class StoreHandler(http.server.BaseHTTPRequestHandler):
         if path == '/data/products.json':
             self.serve_static('data/products.json')
             return
+        if path == '/api/products':
+            self.send_json(200, products_load())
+            return
         if path == '/api/payments':
-            self.send_json(200, load_json('payments.json', default_payments()))
+            self.send_json(200, payments_load())
             return
         if path == '/api/orders':
-            self.send_json(200, load_json('orders.json', default_orders()))
+            if not is_authenticated(self):
+                self.send_json(401, {"error": "غير مصرح — سجّل الدخول أولاً"})
+                return
+            self.send_json(200, {"orders": orders_load()})
             return
 
         # ملفات مرفوعة
@@ -219,19 +333,23 @@ class StoreHandler(http.server.BaseHTTPRequestHandler):
 
         # إنشاء طلب (من العميل - بدون تسجيل دخول)
         if path == '/api/orders':
-            orders = load_json('orders.json', default_orders())
+            orders = orders_load()
             order_id = gen_order_id()
             receipt_path = ''
             img_b64 = payload.get('receiptImage', '')
             if img_b64:
                 try:
-                    if ',' in img_b64:
-                        header, img_b64 = img_b64.split(',', 1)
-                    img_bytes = base64.b64decode(img_b64)
-                    ext = '.png'
-                    receipt_path = 'uploads/' + order_id + ext
-                    with open(os.path.join(BASE_DIR, receipt_path), 'wb') as f:
-                        f.write(img_bytes)
+                    if db_enabled():
+                        # في وضع MongoDB نحفظ الإيصال كصورة مضغوطة مباشرة في قاعدة البيانات
+                        receipt_path = img_b64
+                    else:
+                        if ',' in img_b64:
+                            header, img_b64 = img_b64.split(',', 1)
+                        img_bytes = base64.b64decode(img_b64)
+                        ext = '.png'
+                        receipt_path = 'uploads/' + order_id + ext
+                        with open(os.path.join(BASE_DIR, receipt_path), 'wb') as f:
+                            f.write(img_bytes)
                 except Exception:
                     receipt_path = ''
 
@@ -248,8 +366,8 @@ class StoreHandler(http.server.BaseHTTPRequestHandler):
                 "receiptImage": receipt_path,
                 "status": "pending"
             }
-            orders['orders'].insert(0, order)
-            save_json('orders.json', orders)
+            orders.insert(0, order)
+            orders_save(orders)
             self.send_json(200, {"ok": True, "id": order_id})
             return
 
@@ -263,16 +381,7 @@ class StoreHandler(http.server.BaseHTTPRequestHandler):
             if games is None:
                 self.send_json(400, {"error": "البيانات غير مكتملة"})
                 return
-            products_path = os.path.join(DATA_DIR, 'products.json')
-            try:
-                with open(products_path, 'r', encoding='utf-8') as f:
-                    current = json.load(f)
-            except Exception:
-                current = {}
-            current['games'] = games
-            if services is not None:
-                current['services'] = services
-            save_json('products.json', current)
+            products_save(games, services)
             self.send_json(200, {"ok": True})
             return
 
@@ -287,7 +396,7 @@ class StoreHandler(http.server.BaseHTTPRequestHandler):
                 "instapay": str(payload.get('instapay', '')),
                 "note": str(payload.get('note', ''))
             }
-            save_json('payments.json', data)
+            payments_save(data)
             self.send_json(200, {"ok": True, "payments": data})
             return
 
@@ -308,12 +417,12 @@ class StoreHandler(http.server.BaseHTTPRequestHandler):
             except Exception:
                 self.send_json(400, {"error": "بيانات غير صالحة"})
                 return
-            orders = load_json('orders.json', default_orders())
-            for o in orders['orders']:
+            orders = orders_load()
+            for o in orders:
                 if o['id'] == order_id:
                     if payload.get('status') in ('pending', 'shipped', 'cancelled'):
                         o['status'] = payload['status']
-                        save_json('orders.json', orders)
+                        orders_save(orders)
                         self.send_json(200, {"ok": True, "order": o})
                         return
                     else:
@@ -332,9 +441,8 @@ class StoreHandler(http.server.BaseHTTPRequestHandler):
         path = parsed.path
         if path.startswith('/api/orders/'):
             order_id = path.split('/')[-1]
-            orders = load_json('orders.json', default_orders())
-            orders['orders'] = [o for o in orders['orders'] if o['id'] != order_id]
-            save_json('orders.json', orders)
+            orders = [o for o in orders_load() if o['id'] != order_id]
+            orders_save(orders)
             self.send_json(200, {"ok": True})
             return
         self.send_error(404)
@@ -352,14 +460,22 @@ def run():
     # تجهيز الملفات الافتراضية
     load_json('admin.json', default_admin())
     load_json('payments.json', default_payments())
-    load_json('orders.json', default_orders())
+    load_json('orders.json', {"orders": []})
 
     print("=" * 50)
     print("  𝑫𝑨𝑹𝑲 𝑺𝑻Ø𝑹𝑬 Backend Server")
     print("=" * 50)
     print(f"  الموقع:      http://localhost:{PORT}")
     print(f"  لوحة التحكم: http://localhost:{PORT}/admin")
-    print(f"  بيانات:      {DATA_DIR}")
+    if db_enabled():
+        try:
+            mongo_client().admin.command('ping')
+            print("  MongoDB:     مفعّل ✓ (متصل)")
+        except Exception as e:
+            print(f"  MongoDB:     فشل الاتصال — سيتم استخدام الملفات المحلية")
+            print(f"               ({e})")
+    else:
+        print("  MongoDB:     غير مفعّل (ملفات محلية)")
     print("=" * 50)
     try:
         with Server(('0.0.0.0', PORT), StoreHandler) as httpd:

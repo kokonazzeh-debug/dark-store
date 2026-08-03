@@ -373,7 +373,7 @@ async function loadGames() {
         if (saved) { const s = JSON.parse(saved); if (s && s.games) data = s; }
       } catch (e) {}
     } else {
-      data = await (await fetch(BASE + 'data/products.json')).json();
+      data = await (await fetch(BASE + 'api/products')).json();
     }
     storeMeta = {
       storeName: data.storeName,
