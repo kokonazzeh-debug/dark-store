@@ -17,6 +17,14 @@ async function loadProducts() {
   }
 }
 
+function fmt(n) {
+  return (+n % 1 === 0) ? String(+n) : (+n).toFixed(2);
+}
+
+function getPhone(itemId) {
+  return productsData.contact.games;
+}
+
 function renderGameTabs() {
   const allItems = [...productsData.games, productsData.services];
   const container = document.getElementById('game-tabs');
@@ -30,7 +38,10 @@ function renderGameTabs() {
 function renderAllSections() {
   const allItems = [...productsData.games, productsData.services];
   const container = document.getElementById('main-content');
-  container.innerHTML = allItems.map((item, i) => `
+  container.innerHTML = allItems.map((item, i) => {
+    const isService = item.id === 'services';
+    const phone = isService ? (item.whatsapp || productsData.contact.services) : getPhone(item.id);
+    return `
     <section class="game-section ${i === 0 ? 'active' : ''}" data-game="${item.id}">
       <div class="game-header">
         <h2 class="game-title" style="color:${item.color}">${item.icon} ${item.name}</h2>
@@ -47,14 +58,23 @@ function renderAllSections() {
               const isPopular = p.popular;
               const btnClass = getBtnClass(item.id, isPopular);
               const popClass = isPopular ? 'popular' : '';
-              const priceText = p.price === 0 ? 'حسب الاتفاق' : `${p.price} <span class="currency">${productsData.currency}</span>`;
-              const btnText = item.id === 'services' ? '💬 تواصل للطلب' : '🔥 اشتري الآن';
+              const hasDiscount = p.originalPrice && p.discount;
+              const priceText = p.price === 0 ? 'حسب الاتفاق' : `${fmt(p.price)} <span class="currency">${productsData.currency}</span>`;
+              const oldPriceText = hasDiscount ? `<span class="old-price">${fmt(p.originalPrice)} ${productsData.currency}</span>` : '';
+              const discountBadge = hasDiscount ? `<span class="discount-badge">خصم ${p.discount}</span>` : '';
+              const btnText = isService ? '💬 تواصل للطلب' : '🔥 اشتري الآن';
               return `
                 <div class="product-card ${popClass}">
-                  <div class="product-name">${p.name}</div>
+                  <div class="product-top">
+                    <div class="product-name">${p.name}</div>
+                    ${discountBadge}
+                  </div>
                   <div class="product-amount">${p.amount}</div>
-                  <div class="product-price">${priceText}</div>
-                  <button class="buy-btn ${btnClass}" onclick="buyProduct('${p.name}', ${p.price})">
+                  <div class="product-price">
+                    ${oldPriceText}
+                    <span class="final-price">${priceText}</span>
+                  </div>
+                  <button class="buy-btn ${btnClass}" onclick="buyProduct('${p.name}', ${p.price}, '${phone}')">
                     ${btnText}
                   </button>
                 </div>
@@ -64,12 +84,12 @@ function renderAllSections() {
         </div>
       `).join('')}
     </section>
-  `).join('');
+  `}).join('');
 }
 
 function getBtnClass(gameId, isPopular) {
   if (isPopular) return 'glow-pink';
-  const map = { pubg: 'glow-orange', fifa: 'glow-green', freefire: 'glow-red', codm: 'glow-gold', services: 'glow-purple' };
+  const map = { pubg: 'glow-orange', freefire: 'glow-red', services: 'glow-purple' };
   return map[gameId] || '';
 }
 
@@ -85,10 +105,10 @@ function setupTabs() {
   });
 }
 
-function buyProduct(name, price) {
-  const priceText = price === 0 ? 'حسب الاتفاق' : `${price} ${productsData.currency}`;
-  const msg = `مرحباً، أريد: ${name} (${priceText})`;
-  const url = `https://wa.me/${productsData.contact.whatsapp}?text=${encodeURIComponent(msg)}`;
+function buyProduct(name, price, phone) {
+  const priceText = price === 0 ? 'حسب الاتفاق' : `${fmt(price)} ${productsData.currency}`;
+  const msg = `مرحباً، أريد شراء: ${name} (${priceText})`;
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 }
 
@@ -114,7 +134,7 @@ function renderFooter() {
   const social = document.getElementById('social-links');
   if (social) {
     social.innerHTML = `
-      <a href="https://wa.me/${productsData.contact.whatsapp}" target="_blank" class="social-btn" title="واتساب">💬</a>
+      <a href="https://wa.me/${productsData.contact.games}" target="_blank" class="social-btn" title="واتساب">💬</a>
     `;
   }
   const yearEl = document.getElementById('copyright-year');
