@@ -31,10 +31,15 @@
     <header class="topbar">
       <div class="topbar-logo">𝑫𝑨𝑹𝑲 <span>ADMIN</span></div>
       <div class="topbar-actions">
-        <a class="btn btn-small" href="/" target="_blank">👁️ عرض الموقع</a>
+        <a class="btn btn-small" href="index.html" target="_blank">👁️ عرض الموقع</a>
         <button class="btn btn-small btn-danger" id="logout-btn">🚪 خروج</button>
       </div>
     </header>
+
+    <!-- تنبيه وضع GitHub Pages -->
+    <div class="static-banner hidden" id="static-banner">
+      ⚡ وضع GitHub Pages (بدون خادم): الطلبات تُحفظ في متصفحك وتصل عبر واتساب، وتعديلات الأسعار والأرقام محفوظة محلياً. لنشرها لكل الزوار: عدّل ملفات <b>data/*.json</b> في الريبو ثم ارفعها.
+    </div>
 
     <div class="layout">
 
@@ -79,6 +84,7 @@
               <textarea id="pay-note" rows="3"></textarea>
               <div class="save-msg" id="payments-msg"></div>
               <button type="submit" class="btn btn-primary">💾 حفظ الأرقام</button>
+              <button type="button" class="btn btn-small hidden" id="download-payments-btn">⬇️ تنزيل payments.json</button>
             </form>
           </div>
         </section>
@@ -93,6 +99,7 @@
           <div class="save-msg" id="games-msg"></div>
           <div class="save-bar">
             <button class="btn btn-primary big" id="save-games-btn">💾 حفظ كل التعديلات</button>
+            <button class="btn btn-small hidden" id="download-games-btn">⬇️ تنزيل products.json</button>
           </div>
         </section>
 
@@ -105,6 +112,7 @@
     <img src="" alt="إيصال" id="lightbox-img">
   </div>
 
+  <script src="config.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

@@ -13,8 +13,8 @@ const DEFAULT_PAYMENTS = {
 
 async function loadProducts() {
   try {
-    const res = await fetch('data/products.json');
-    productsData = await res.json();
+    const saved = localStorage.getItem('dark_products');
+    productsData = saved ? JSON.parse(saved) : await (await fetch('data/products.json')).json();
     renderGameTabs();
     renderAllSections();
     setupTabs();
@@ -199,6 +199,62 @@ function setupOrderModal() {
   });
 }
 
+function saveLocalOrder(payload) {
+  try {
+    const orders = JSON.parse(localStorage.getItem('dark_orders') || '[]');
+    orders.unshift({
+      id: 'LOCAL-' + Date.now().toString().slice(-6),
+      ...payload,
+      status: 'pending',
+      date: new Date().toLocaleString('ar-EG')
+    });
+    localStorage.setItem('dark_orders', JSON.stringify(orders));
+  } catch (e) {}
+}
+
+function submitWhatsAppOrder(payload, msgEl) {
+  const lines = [
+    'مرحباً، أريد طلب:',
+    '🎮 اللعبة: ' + payload.gameName,
+    '📦 المنتج: ' + payload.product,
+    '💰 المبلغ: ' + (payload.amount === 0 ? 'حسب الاتفاق' : payload.amount + ' ج'),
+    '🆔 رقم الحساب: ' + payload.gameId,
+    '👤 الاسم: ' + payload.customerName,
+    '📱 الهاتف: ' + payload.phone,
+    '💳 طريقة الدفع: ' + payload.paymentMethod,
+    '🖼️ سأرسل صورة الإيصال في المحادثة'
+  ];
+  const wa = document.createElement('a');
+  wa.href = 'https://wa.me/' + orderPhone.replace(/^0/, '20') + '?text=' + encodeURIComponent(lines.join('\n'));
+  wa.target = '_blank';
+  wa.rel = 'noopener';
+  document.body.appendChild(wa);
+  wa.click();
+  wa.remove();
+
+  saveLocalOrder(payload);
+  msgEl.className = 'modal-msg success';
+  msgEl.innerHTML = '✅ تم تجهيز طلبك! تم فتح واتساب لإرساله لنا — أرفق صورة الإيصال في المحادثة.';
+  document.getElementById('order-form').querySelector('button[type="submit"]').disabled = true;
+}
+
+function compressImage(dataUrl, maxW = 600, quality = 0.7) {
+  return new Promise(resolve => {
+    if (!dataUrl || !/^data:image/.test(dataUrl)) return resolve(dataUrl || '');
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(cv.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 async function submitOrder(receiptImage, msgEl) {
   const payload = {
     customerName: document.getElementById('order-name').value.trim(),
@@ -208,27 +264,30 @@ async function submitOrder(receiptImage, msgEl) {
     product: orderProduct,
     amount: orderPrice,
     paymentMethod: document.getElementById('order-paymethod').value,
-    receiptImage
+    receiptImage: await compressImage(receiptImage)
   };
 
   try {
-    const res = await fetch('/api/orders', {
+    const res = await fetch('api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    if (res.status === 404) {
+      submitWhatsAppOrder(payload, msgEl);
+      return;
+    }
     const data = await res.json();
     if (res.ok) {
+      saveLocalOrder(payload);
       msgEl.className = 'modal-msg success';
       msgEl.textContent = '✅ تم استلام طلبك بنجاح! سنقوم بالشحن فوراً. رقم الطلب: ' + data.id;
       document.getElementById('order-form').querySelector('button[type="submit"]').disabled = true;
     } else {
-      msgEl.className = 'modal-msg error';
-      msgEl.textContent = data.error || 'حدث خطأ، جرب عبر واتساب';
+      submitWhatsAppOrder(payload, msgEl);
     }
   } catch (err) {
-    msgEl.className = 'modal-msg error';
-    msgEl.textContent = '⚠️ تعذر إرسال الطلب الآن. يرجى التواصل عبر واتساب (زر الواتساب بالأعلى).';
+    submitWhatsAppOrder(payload, msgEl);
   }
 }
 
@@ -241,8 +300,18 @@ function closeOrderModal() {
 async function loadPaymentNumbers() {
   let payments = DEFAULT_PAYMENTS;
   try {
-    const res = await fetch('/api/payments');
+    const res = await fetch('api/payments');
     if (res.ok) payments = await res.json();
+  } catch (e) {}
+  try {
+    if (!payments.vodafone) {
+      const res = await fetch('data/payments.json');
+      if (res.ok) payments = await res.json();
+    }
+  } catch (e) {}
+  try {
+    const saved = localStorage.getItem('dark_payments');
+    if (saved) payments = { ...payments, ...JSON.parse(saved) };
   } catch (e) {}
   document.getElementById('pay-vodafone').textContent = payments.vodafone || '-';
   document.getElementById('pay-orange').textContent = payments.orange || '-';

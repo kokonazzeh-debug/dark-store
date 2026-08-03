@@ -1,10 +1,25 @@
 const API = '';
 let TOKEN = sessionStorage.getItem('dark_admin_token') || '';
+let STATIC_MODE = false;
+
+// حساب المسار الأساسي ليعمل سواء على السيرفر أو GitHub Pages (repo/...)
+function getBase() {
+  let p = location.pathname;
+  const idx = p.lastIndexOf('/admin');
+  if (idx >= 0) {
+    p = p.slice(0, idx);
+  } else {
+    p = p.slice(0, p.lastIndexOf('/') + 1);
+  }
+  if (p && !p.endsWith('/')) p += '/';
+  return p || '/';
+}
+const BASE = getBase();
 
 function api(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
   if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
-  return fetch(API + path, { ...options, headers });
+  return fetch(BASE + path.replace(/^\//, ''), { ...options, headers });
 }
 
 function esc(s) {
@@ -17,6 +32,37 @@ function fmt(n) {
   if (n === '' || n == null) return '';
   const v = +n;
   return (v % 1 === 0) ? String(v) : v.toFixed(2);
+}
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function fnvHash(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = (h * 0x01000193) >>> 0;
+  }
+  return h.toString(16);
+}
+
+async function verifyPassword(pw) {
+  const cfg = window.ADMIN_CONFIG || {};
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    return (await sha256(pw)) === cfg.passwordHash;
+  }
+  return fnvHash(pw) === (cfg.passwordHashSync || '');
+}
+
+function downloadJSON(filename, obj) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 const STATUS_MAP = {
@@ -36,6 +82,7 @@ const loginError = document.getElementById('login-error');
 function showPanel() {
   loginView.classList.add('hidden');
   panelView.classList.remove('hidden');
+  if (STATIC_MODE) document.getElementById('static-banner').classList.remove('hidden');
 }
 
 function showLogin() {
@@ -46,13 +93,26 @@ function showLogin() {
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   loginError.textContent = '';
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+
+  if (STATIC_MODE) {
+    const cfg = window.ADMIN_CONFIG || {};
+    const ok = username === cfg.username && await verifyPassword(password);
+    if (ok) {
+      sessionStorage.setItem('dark_admin_static', '1');
+      showPanel();
+      initPanel();
+    } else {
+      loginError.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+    }
+    return;
+  }
+
   try {
     const res = await api('/api/login', {
       method: 'POST',
-      body: JSON.stringify({
-        username: document.getElementById('login-user').value.trim(),
-        password: document.getElementById('login-pass').value
-      })
+      body: JSON.stringify({ username, password })
     });
     const data = await res.json();
     if (res.ok) {
@@ -72,6 +132,7 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   try { await api('/api/logout', { method: 'POST' }); } catch (e) {}
   TOKEN = '';
   sessionStorage.removeItem('dark_admin_token');
+  sessionStorage.removeItem('dark_admin_static');
   showLogin();
 });
 
@@ -79,6 +140,8 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
    التهيئة
    ========================================== */
 function initPanel() {
+  const link = document.querySelector('.topbar-actions a');
+  if (link) link.href = BASE;
   switchView('orders');
   bindSidebar();
   loadOrders();
@@ -105,8 +168,21 @@ function switchView(name) {
 let allOrders = [];
 let ordersFilter = 'all';
 
+function getStoredOrders() {
+  try { return JSON.parse(localStorage.getItem('dark_orders') || '[]'); } catch (e) { return []; }
+}
+
+function setStoredOrders(orders) {
+  try { localStorage.setItem('dark_orders', JSON.stringify(orders)); } catch (e) {}
+}
+
 async function loadOrders() {
   const list = document.getElementById('orders-list');
+  if (STATIC_MODE) {
+    allOrders = getStoredOrders();
+    renderOrders();
+    return;
+  }
   try {
     const res = await api('/api/orders');
     const data = await res.json();
@@ -129,8 +205,9 @@ function renderOrders() {
   }
 
   list.innerHTML = filtered.map(o => {
+    const isDataUrl = /^data:/.test(o.receiptImage || '');
     const receipt = o.receiptImage
-      ? `<img src="/${o.receiptImage}" alt="إيصال" onclick="showLightbox('/${esc(o.receiptImage)}')">`
+      ? `<img src="${esc(isDataUrl ? o.receiptImage : '/' + o.receiptImage)}" alt="إيصال" onclick="showLightbox('${esc(isDataUrl ? o.receiptImage : '/' + o.receiptImage)}')">`
       : '<span class="no-img">📷</span>';
 
     return `
@@ -173,6 +250,12 @@ document.querySelectorAll('.filters .chip').forEach(chip => {
 });
 
 async function changeStatus(id, status) {
+  if (STATIC_MODE) {
+    const orders = getStoredOrders();
+    const o = orders.find(x => x.id === id);
+    if (o) { o.status = status; setStoredOrders(orders); loadOrders(); }
+    return;
+  }
   try {
     const res = await api('/api/orders/' + id, {
       method: 'PATCH',
@@ -191,6 +274,11 @@ async function changeStatus(id, status) {
 
 async function deleteOrder(id) {
   if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
+  if (STATIC_MODE) {
+    setStoredOrders(getStoredOrders().filter(x => x.id !== id));
+    loadOrders();
+    return;
+  }
   try {
     await api('/api/orders/' + id, { method: 'DELETE' });
     loadOrders();
@@ -209,8 +297,17 @@ function showLightbox(src) {
    ========================================== */
 async function loadPayments() {
   try {
-    const res = await api('/api/payments');
-    const p = await res.json();
+    let p = {};
+    if (STATIC_MODE) {
+      try { p = await (await fetch(BASE + 'data/payments.json')).json(); } catch (e) {}
+      try {
+        const saved = localStorage.getItem('dark_payments');
+        if (saved) p = { ...p, ...JSON.parse(saved) };
+      } catch (e) {}
+    } else {
+      const res = await api('/api/payments');
+      p = await res.json();
+    }
     document.getElementById('pay-vodafone').value = p.vodafone || '';
     document.getElementById('pay-orange').value = p.orange || '';
     document.getElementById('pay-instapay').value = p.instapay || '';
@@ -223,15 +320,28 @@ document.getElementById('payments-form').addEventListener('submit', async (e) =>
   const msg = document.getElementById('payments-msg');
   msg.className = 'save-msg';
   msg.textContent = 'جاري الحفظ...';
+
+  const payData = {
+    vodafone: document.getElementById('pay-vodafone').value.trim(),
+    orange: document.getElementById('pay-orange').value.trim(),
+    instapay: document.getElementById('pay-instapay').value.trim(),
+    note: document.getElementById('pay-note').value.trim()
+  };
+
+  if (STATIC_MODE) {
+    try { localStorage.setItem('dark_payments', JSON.stringify(payData)); } catch (err) {}
+    msg.textContent = '✅ تم الحفظ في متصفحك (سيظهر لزوار متصفحك فقط). للنشر للجميع: اضغط زر التنزيل وارفع الملف إلى data/payments.json';
+    msg.style.whiteSpace = 'pre-line';
+    const dl = document.getElementById('download-payments-btn');
+    dl.classList.remove('hidden');
+    dl.onclick = () => downloadJSON('payments.json', payData);
+    return;
+  }
+
   try {
     const res = await api('/api/payments', {
       method: 'POST',
-      body: JSON.stringify({
-        vodafone: document.getElementById('pay-vodafone').value.trim(),
-        orange: document.getElementById('pay-orange').value.trim(),
-        instapay: document.getElementById('pay-instapay').value.trim(),
-        note: document.getElementById('pay-note').value.trim()
-      })
+      body: JSON.stringify(payData)
     });
     if (res.ok) {
       msg.textContent = '✅ تم حفظ أرقام الدفع بنجاح';
@@ -251,11 +361,25 @@ document.getElementById('payments-form').addEventListener('submit', async (e) =>
    ========================================== */
 let currentGames = null;
 let currentServices = null;
+let storeMeta = {};
 
 async function loadGames() {
   try {
-    const res = await fetch('/data/products.json');
-    const data = await res.json();
+    let data = { games: [], services: null };
+    if (STATIC_MODE) {
+      try { data = await (await fetch(BASE + 'data/products.json')).json(); } catch (e) {}
+      try {
+        const saved = localStorage.getItem('dark_products');
+        if (saved) { const s = JSON.parse(saved); if (s && s.games) data = s; }
+      } catch (e) {}
+    } else {
+      data = await (await fetch(BASE + 'data/products.json')).json();
+    }
+    storeMeta = {
+      storeName: data.storeName,
+      currency: data.currency,
+      contact: data.contact
+    };
     currentGames = data.games || [];
     currentServices = data.services || null;
     renderGamesEditor();
@@ -446,6 +570,17 @@ document.getElementById('save-games-btn').addEventListener('click', async () => 
     });
   }
 
+  const fullData = { ...storeMeta, games, services };
+
+  if (STATIC_MODE) {
+    try { localStorage.setItem('dark_products', JSON.stringify(fullData)); } catch (err) {}
+    msg.textContent = '✅ تم الحفظ في متصفحك (سيظهر لزوار متصفحك فقط). للنشر للجميع: اضغط زر التنزيل وارفع الملف إلى data/products.json';
+    const dl = document.getElementById('download-games-btn');
+    dl.classList.remove('hidden');
+    dl.onclick = () => downloadJSON('products.json', fullData);
+    return;
+  }
+
   try {
     const res = await api('/api/games', {
       method: 'POST',
@@ -469,6 +604,23 @@ document.getElementById('save-games-btn').addEventListener('click', async () => 
    البدء
    ========================================== */
 (async function boot() {
+  // تحديد الوضع: سيرفر (server.py) أو ثابت (GitHub Pages)
+  try {
+    const res = await fetch(BASE + 'api/orders');
+    if (res.status === 404) throw new Error('static');
+  } catch (e) {
+    STATIC_MODE = true;
+  }
+
+  if (STATIC_MODE) {
+    showLogin();
+    if (sessionStorage.getItem('dark_admin_static') === '1') {
+      showPanel();
+      initPanel();
+    }
+    return;
+  }
+
   if (TOKEN) {
     try {
       const res = await api('/api/orders');
