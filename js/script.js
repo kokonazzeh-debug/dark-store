@@ -1,4 +1,15 @@
 let productsData = null;
+let orderGameName = '';
+let orderProduct = '';
+let orderPrice = 0;
+let orderPhone = '';
+
+const DEFAULT_PAYMENTS = {
+  vodafone: '01204733638',
+  orange: '01204733638',
+  instapay: '01204733638',
+  note: 'يرجى إرسال إيصال التحويل مع اسم اللعبة والـ ID في الرسالة'
+};
 
 async function loadProducts() {
   try {
@@ -8,6 +19,8 @@ async function loadProducts() {
     renderAllSections();
     setupTabs();
     createParticles();
+    setupOrderModal();
+    loadPaymentNumbers();
   } catch (e) {
     document.getElementById('main-content').innerHTML = `
       <div style="text-align:center;padding:100px 20px;color:#ff4444;">
@@ -64,7 +77,7 @@ function renderAllSections() {
               const priceText = p.price === 0 ? 'حسب الاتفاق' : `${fmt(p.price)} <span class="currency">${productsData.currency}</span>`;
               const oldPriceText = hasDiscount ? `<span class="old-price">${fmt(p.originalPrice)} ${productsData.currency}</span>` : '';
               const discountBadge = hasDiscount ? `<span class="discount-badge">خصم ${p.discount}</span>` : '';
-              const btnText = isService ? '💬 تواصل للطلب' : '🔥 اشتري الآن';
+              const btnText = isService ? '💬 اطلب الخدمة' : '🔥 اشتري الآن';
               return `
                 <div class="product-card ${popClass}">
                   <div class="card-icon">${p.icon || item.icon}</div>
@@ -77,7 +90,7 @@ function renderAllSections() {
                     ${oldPriceText}
                     <span class="final-price">${priceText}</span>
                   </div>
-                  <button class="buy-btn ${btnClass}" onclick="buyProduct('${p.name}', ${p.price}, '${phone}')">
+                  <button class="buy-btn ${btnClass}" onclick="buyProduct('${p.name}', ${p.price}, '${phone}', '${item.name}', ${isService})">
                     ${btnText}
                   </button>
                 </div>
@@ -108,13 +121,6 @@ function setupTabs() {
   });
 }
 
-function buyProduct(name, price, phone) {
-  const priceText = price === 0 ? 'حسب الاتفاق' : `${fmt(price)} ${productsData.currency}`;
-  const msg = `مرحباً، أريد شراء: ${name} (${priceText})`;
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
-}
-
 function createParticles() {
   const container = document.getElementById('particles');
   for (let i = 0; i < 30; i++) {
@@ -129,6 +135,119 @@ function createParticles() {
     p.style.boxShadow = `0 0 6px ${p.style.background}`;
     container.appendChild(p);
   }
+}
+
+// ============ نافذة الطلب ============
+function buyProduct(name, price, phone, gameName, isService) {
+  orderGameName = gameName;
+  orderProduct = name;
+  orderPrice = price;
+  orderPhone = phone;
+
+  document.getElementById('modal-product').textContent = `${gameName} — ${name} | ${price === 0 ? 'حسب الاتفاق' : price + ' ' + (productsData ? productsData.currency : 'ج')}`;
+  document.getElementById('order-form').reset();
+  document.getElementById('modal-msg').textContent = '';
+  document.getElementById('modal-msg').className = 'modal-msg';
+  document.getElementById('upload-preview').classList.add('hidden');
+
+  // بديل واتساب
+  const wa = document.getElementById('modal-whatsapp');
+  const priceText = price === 0 ? 'حسب الاتفاق' : `${price} ج`;
+  const msg = `مرحباً، أريد: ${gameName} — ${name} (${priceText})`;
+  wa.innerHTML = `<a href="https://wa.me/${phone}?text=${encodeURIComponent(msg)}" target="_blank">أو تواصل مباشرة عبر واتساب 💬</a>`;
+
+  document.getElementById('order-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function setupOrderModal() {
+  document.getElementById('modal-close').addEventListener('click', closeOrderModal);
+  document.getElementById('order-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'order-modal') closeOrderModal();
+  });
+
+  // معاينة الإيصال
+  document.getElementById('order-receipt').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById('preview-img').src = ev.target.result;
+      document.getElementById('upload-preview').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // إرسال الطلب
+  document.getElementById('order-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msgEl = document.getElementById('modal-msg');
+    msgEl.className = 'modal-msg';
+    msgEl.textContent = 'جاري إرسال الطلب...';
+
+    const receiptInput = document.getElementById('order-receipt');
+    let receiptImage = '';
+    if (receiptInput.files && receiptInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        await submitOrder(ev.target.result, msgEl);
+      };
+      reader.readAsDataURL(receiptInput.files[0]);
+    } else {
+      await submitOrder('', msgEl);
+    }
+  });
+}
+
+async function submitOrder(receiptImage, msgEl) {
+  const payload = {
+    customerName: document.getElementById('order-name').value.trim(),
+    phone: document.getElementById('order-phone').value.trim(),
+    gameId: document.getElementById('order-gameid').value.trim(),
+    gameName: orderGameName,
+    product: orderProduct,
+    amount: orderPrice,
+    paymentMethod: document.getElementById('order-paymethod').value,
+    receiptImage
+  };
+
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msgEl.className = 'modal-msg success';
+      msgEl.textContent = '✅ تم استلام طلبك بنجاح! سنقوم بالشحن فوراً. رقم الطلب: ' + data.id;
+      document.getElementById('order-form').querySelector('button[type="submit"]').disabled = true;
+    } else {
+      msgEl.className = 'modal-msg error';
+      msgEl.textContent = data.error || 'حدث خطأ، جرب عبر واتساب';
+    }
+  } catch (err) {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = '⚠️ تعذر إرسال الطلب الآن. يرجى التواصل عبر واتساب (زر الواتساب بالأعلى).';
+  }
+}
+
+function closeOrderModal() {
+  document.getElementById('order-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+// تحميل أرقام الدفع
+async function loadPaymentNumbers() {
+  let payments = DEFAULT_PAYMENTS;
+  try {
+    const res = await fetch('/api/payments');
+    if (res.ok) payments = await res.json();
+  } catch (e) {}
+  document.getElementById('pay-vodafone').textContent = payments.vodafone || '-';
+  document.getElementById('pay-orange').textContent = payments.orange || '-';
+  document.getElementById('pay-instapay').textContent = payments.instapay || '-';
+  document.getElementById('pay-note').textContent = payments.note || '';
 }
 
 // Update contact info in footer

@@ -36,6 +36,60 @@
     <p>جميع الحقوق محفوظة &copy; <span id="copyright-year"></span> 𝑫𝑨𝑹𝑲 𝑺𝑻Ø𝑹𝑬</p>
   </footer>
 
+  <!-- ===== نافذة الطلب ===== -->
+  <div class="order-modal hidden" id="order-modal">
+    <div class="order-modal-box">
+      <button class="modal-close" id="modal-close">✕</button>
+      <div class="modal-head">
+        <div class="modal-title">🛒 إتمام الطلب</div>
+        <div class="modal-product" id="modal-product"></div>
+      </div>
+
+      <div class="payment-numbers" id="payment-numbers">
+        <div class="pay-num-head">💳 بيانات الدفع</div>
+        <div class="pay-num">📱 فودافون كاش: <b id="pay-vodafone">...</b></div>
+        <div class="pay-num">📱 أورنج كاش: <b id="pay-orange">...</b></div>
+        <div class="pay-num">🏦 انستا باي: <b id="pay-instapay">...</b></div>
+        <div class="pay-note" id="pay-note"></div>
+      </div>
+
+      <form id="order-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label>👤 اسمك</label>
+            <input type="text" id="order-name" placeholder="اكتب اسمك" required>
+          </div>
+          <div class="form-field">
+            <label>📱 رقم هاتفك</label>
+            <input type="text" id="order-phone" placeholder="01xxxxxxxxx" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>🆔 ID اللعبة</label>
+            <input type="text" id="order-gameid" placeholder="Character ID / UID" required>
+          </div>
+          <div class="form-field">
+            <label>💳 طريقة الدفع</label>
+            <select id="order-paymethod">
+              <option>فودافون كاش</option>
+              <option>أورنج كاش</option>
+              <option>انستا باي</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>🧾 صورة إيصال التحويل</label>
+          <input type="file" id="order-receipt" accept="image/*">
+          <div class="upload-preview hidden" id="upload-preview"><img id="preview-img" alt="معاينة"></div>
+        </div>
+        <div class="modal-msg" id="modal-msg"></div>
+        <button type="submit" class="buy-btn glow-pink w-full">✅ تأكيد الطلب</button>
+        <div class="modal-whatsapp" id="modal-whatsapp"></div>
+      </form>
+    </div>
+  </div>
+
   <script src="js/script.js"></script>
 </body>
 </html>

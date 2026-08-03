@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم | 𝑫𝑨𝑹𝑲 𝑺𝑻Ø𝑹𝑬</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ===== شاشة تسجيل الدخول ===== -->
+  <div class="login-view" id="login-view">
+    <div class="login-card">
+      <div class="login-logo">𝑫𝑨𝑹𝑲 <span>ADMIN</span></div>
+      <div class="login-title">لوحة التحكم</div>
+      <form id="login-form">
+        <label>اسم المستخدم</label>
+        <input type="text" id="login-user" placeholder="admin" autocomplete="username" required>
+        <label>كلمة المرور</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" required>
+        <div class="login-error" id="login-error"></div>
+        <button type="submit" class="btn btn-primary">🔐 تسجيل الدخول</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== لوحة التحكم ===== -->
+  <div class="panel-view hidden" id="panel-view">
+
+    <!-- الشريط العلوي -->
+    <header class="topbar">
+      <div class="topbar-logo">𝑫𝑨𝑹𝑲 <span>ADMIN</span></div>
+      <div class="topbar-actions">
+        <a class="btn btn-small" href="/" target="_blank">👁️ عرض الموقع</a>
+        <button class="btn btn-small btn-danger" id="logout-btn">🚪 خروج</button>
+      </div>
+    </header>
+
+    <div class="layout">
+
+      <!-- القائمة الجانبية -->
+      <aside class="sidebar">
+        <button class="side-btn active" data-view="orders">📦 الطلبات</button>
+        <button class="side-btn" data-view="payments">💳 أرقام الدفع</button>
+        <button class="side-btn" data-view="games">🎮 الألعاب والأسعار</button>
+      </aside>
+
+      <!-- المحتوى -->
+      <main class="content">
+
+        <!-- الطلبات -->
+        <section class="view active" id="view-orders">
+          <div class="view-head">
+            <h2>📦 إدارة الطلبات</h2>
+            <div class="filters">
+              <button class="chip active" data-filter="all">الكل</button>
+              <button class="chip" data-filter="pending">قيد الانتظار</button>
+              <button class="chip" data-filter="shipped">تم الشحن</button>
+              <button class="chip" data-filter="cancelled">ملغي</button>
+            </div>
+          </div>
+          <div class="orders-list" id="orders-list">
+            <div class="empty">جارٍ تحميل الطلبات...</div>
+          </div>
+        </section>
+
+        <!-- أرقام الدفع -->
+        <section class="view" id="view-payments">
+          <div class="view-head"><h2>💳 أرقام الدفع</h2></div>
+          <div class="form-card">
+            <form id="payments-form">
+              <label>📱 فودافون كاش</label>
+              <input type="text" id="pay-vodafone" placeholder="01xxxxxxxxx">
+              <label>📱 أورنج كاش</label>
+              <input type="text" id="pay-orange" placeholder="01xxxxxxxxx">
+              <label>🏦 حساب انستا باي</label>
+              <input type="text" id="pay-instapay" placeholder="رقم أو بريد انستا باي">
+              <label>📝 ملاحظة للعملاء</label>
+              <textarea id="pay-note" rows="3"></textarea>
+              <div class="save-msg" id="payments-msg"></div>
+              <button type="submit" class="btn btn-primary">💾 حفظ الأرقام</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- الألعاب والأسعار -->
+        <section class="view" id="view-games">
+          <div class="view-head">
+            <h2>🎮 الألعاب والأسعار</h2>
+            <button class="btn btn-add" id="add-game-btn">➕ إضافة لعبة</button>
+          </div>
+          <div id="games-editor"></div>
+          <div class="save-msg" id="games-msg"></div>
+          <div class="save-bar">
+            <button class="btn btn-primary big" id="save-games-btn">💾 حفظ كل التعديلات</button>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- نافذة عرض إيصال -->
+  <div class="lightbox hidden" id="lightbox" onclick="this.classList.add('hidden')">
+    <img src="" alt="إيصال" id="lightbox-img">
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
