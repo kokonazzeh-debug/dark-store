@@ -44,12 +44,14 @@ function renderAllSections() {
     return `
     <section class="game-section ${i === 0 ? 'active' : ''}" data-game="${item.id}">
       <div class="game-header">
-        <h2 class="game-title" style="color:${item.color}">${item.icon} ${item.name}</h2>
+        <div class="game-icon-big" style="--gc:${item.color}">${item.icon}</div>
+        <h2 class="game-title" style="color:${item.color}">${item.name}</h2>
         <p class="game-desc">${item.desc || `أفضل أسعار شحن ${item.name} - ${productsData.storeName}`}</p>
       </div>
       ${item.categories.map(cat => `
         <div class="category">
           <h3 class="category-title">
+            <span class="cat-icon">${cat.icon || item.icon}</span>
             ${cat.name}
             <span class="glow-line"></span>
           </h3>
@@ -65,6 +67,7 @@ function renderAllSections() {
               const btnText = isService ? '💬 تواصل للطلب' : '🔥 اشتري الآن';
               return `
                 <div class="product-card ${popClass}">
+                  <div class="card-icon">${p.icon || item.icon}</div>
                   <div class="product-top">
                     <div class="product-name">${p.name}</div>
                     ${discountBadge}

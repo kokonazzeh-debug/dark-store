@@ -14,37 +14,40 @@
       "categories": [
         {
           "name": "شدات UC",
+          "icon": "🔰",
           "products": [
-            { "name": "30 شده", "amount": "30 UC", "price": 23, "originalPrice": 25.49, "discount": "5.88%" },
-            { "name": "60 شده", "amount": "60 UC", "price": 47, "originalPrice": 50.99, "discount": "5.88%", "popular": true },
-            { "name": "60+300 شده", "amount": "60 + 300 UC", "price": 239, "originalPrice": 254.99, "discount": "5.88%" },
-            { "name": "60+600 شده", "amount": "60 + 600 UC", "price": 479, "originalPrice": 509.99, "discount": "5.88%" },
-            { "name": "300+1500 شده", "amount": "300 + 1500 UC", "price": 1199, "originalPrice": 1274.99, "discount": "5.88%" },
-            { "name": "850+3000 شده", "amount": "850 + 3000 UC", "price": 2399, "originalPrice": 2549.99, "discount": "5.88%", "popular": true },
-            { "name": "2100+6000 شده", "amount": "2100 + 6000 UC", "price": 4799, "originalPrice": 5099.99, "discount": "5.88%" },
-            { "name": "4200+12000 شده", "amount": "4200 + 12000 UC", "price": 9599, "originalPrice": 10199.99, "discount": "5.88%" },
-            { "name": "6300+18000 شده", "amount": "6300 + 18000 UC", "price": 14399, "originalPrice": 15299.99, "discount": "5.88%" },
-            { "name": "8400+24000 شده", "amount": "8400 + 24000 UC", "price": 19199, "originalPrice": 20399.99, "discount": "5.88%" },
-            { "name": "10500+30000 شده", "amount": "10500 + 30000 UC", "price": 23999, "originalPrice": 25499.99, "discount": "5.88%" },
-            { "name": "12600+36000 شده", "amount": "12600 + 36000 UC", "price": 28799, "originalPrice": 30599.99, "discount": "5.88%" },
-            { "name": "21000+60000 شده", "amount": "21000 + 60000 UC", "price": 47999, "originalPrice": 50999.99, "discount": "5.88%", "popular": true }
+            { "name": "30 شده", "amount": "30 UC", "price": 23, "originalPrice": 25.49, "discount": "5.88%", "icon": "🔹" },
+            { "name": "60 شده", "amount": "60 UC", "price": 47, "originalPrice": 50.99, "discount": "5.88%", "popular": true, "icon": "🔷" },
+            { "name": "60+300 شده", "amount": "60 + 300 UC", "price": 239, "originalPrice": 254.99, "discount": "5.88%", "icon": "💠" },
+            { "name": "60+600 شده", "amount": "60 + 600 UC", "price": 479, "originalPrice": 509.99, "discount": "5.88%", "icon": "🟦" },
+            { "name": "300+1500 شده", "amount": "300 + 1500 UC", "price": 1199, "originalPrice": 1274.99, "discount": "5.88%", "icon": "💎" },
+            { "name": "850+3000 شده", "amount": "850 + 3000 UC", "price": 2399, "originalPrice": 2549.99, "discount": "5.88%", "popular": true, "icon": "💎" },
+            { "name": "2100+6000 شده", "amount": "2100 + 6000 UC", "price": 4799, "originalPrice": 5099.99, "discount": "5.88%", "icon": "🎖️" },
+            { "name": "4200+12000 شده", "amount": "4200 + 12000 UC", "price": 9599, "originalPrice": 10199.99, "discount": "5.88%", "icon": "🏆" },
+            { "name": "6300+18000 شده", "amount": "6300 + 18000 UC", "price": 14399, "originalPrice": 15299.99, "discount": "5.88%", "icon": "🥇" },
+            { "name": "8400+24000 شده", "amount": "8400 + 24000 UC", "price": 19199, "originalPrice": 20399.99, "discount": "5.88%", "icon": "💠" },
+            { "name": "10500+30000 شده", "amount": "10500 + 30000 UC", "price": 23999, "originalPrice": 25499.99, "discount": "5.88%", "icon": "🔷" },
+            { "name": "12600+36000 شده", "amount": "12600 + 36000 UC", "price": 28799, "originalPrice": 30599.99, "discount": "5.88%", "icon": "💎" },
+            { "name": "21000+60000 شده", "amount": "21000 + 60000 UC", "price": 47999, "originalPrice": 50999.99, "discount": "5.88%", "popular": true, "icon": "👑" }
           ]
         },
         {
           "name": "Royale Pass",
+          "icon": "👑",
           "products": [
-            { "name": "Royale Pass عادي", "amount": "RP عادي", "price": 150 },
-            { "name": "Royale Pass نخبة", "amount": "RP نخبة", "price": 350, "popular": true },
-            { "name": "Royale Pass + 25 Level", "amount": "RP + 25 لفل", "price": 550 }
+            { "name": "Royale Pass عادي", "amount": "RP عادي", "price": 150, "icon": "👑" },
+            { "name": "Royale Pass نخبة", "amount": "RP نخبة", "price": 350, "popular": true, "icon": "👑" },
+            { "name": "Royale Pass + 25 Level", "amount": "RP + 25 لفل", "price": 550, "icon": "🚀" }
           ]
         },
         {
           "name": "عروض خاصة",
+          "icon": "🎁",
           "products": [
-            { "name": "باقة الـ Weekly", "amount": "60 UC يومياً", "price": 65 },
-            { "name": "باقة الـ Monthly", "amount": "شحن يومي", "price": 250, "popular": true },
-            { "name": "باقة الـ RP + UC", "amount": "RP + 200 UC", "price": 400 },
-            { "name": "كود 24 ساعة", "amount": "شحن سريع", "price": 500 }
+            { "name": "باقة الـ Weekly", "amount": "60 UC يومياً", "price": 65, "icon": "📅" },
+            { "name": "باقة الـ Monthly", "amount": "شحن يومي", "price": 250, "popular": true, "icon": "🗓️" },
+            { "name": "باقة الـ RP + UC", "amount": "RP + 200 UC", "price": 400, "icon": "🎫" },
+            { "name": "كود 24 ساعة", "amount": "شحن سريع", "price": 500, "icon": "⚡" }
           ]
         }
       ]
@@ -57,21 +60,23 @@
       "categories": [
         {
           "name": "شحن Diamonds",
+          "icon": "💎",
           "products": [
-            { "name": "100 Diamonds", "amount": "100 💎", "price": 12 },
-            { "name": "310 Diamonds", "amount": "310 💎", "price": 35 },
-            { "name": "520 Diamonds", "amount": "520 💎", "price": 55, "popular": true },
-            { "name": "1060 Diamonds", "amount": "1060 💎", "price": 110 },
-            { "name": "2180 Diamonds", "amount": "2180 💎", "price": 210 },
-            { "name": "5600 Diamonds", "amount": "5600 💎", "price": 520, "popular": true },
-            { "name": "11500 Diamonds", "amount": "11500 💎", "price": 1000 }
+            { "name": "100 Diamonds", "amount": "100 💎", "price": 12, "icon": "💎" },
+            { "name": "310 Diamonds", "amount": "310 💎", "price": 35, "icon": "💎" },
+            { "name": "520 Diamonds", "amount": "520 💎", "price": 55, "popular": true, "icon": "💎" },
+            { "name": "1060 Diamonds", "amount": "1060 💎", "price": 110, "icon": "💠" },
+            { "name": "2180 Diamonds", "amount": "2180 💎", "price": 210, "icon": "💠" },
+            { "name": "5600 Diamonds", "amount": "5600 💎", "price": 520, "popular": true, "icon": "🔷" },
+            { "name": "11500 Diamonds", "amount": "11500 💎", "price": 1000, "icon": "👑" }
           ]
         },
         {
           "name": "Membership",
+          "icon": "👥",
           "products": [
-            { "name": "Weekly Membership", "amount": "أسبوعي", "price": 45 },
-            { "name": "Monthly Membership", "amount": "شهري", "price": 120, "popular": true }
+            { "name": "Weekly Membership", "amount": "أسبوعي", "price": 45, "icon": "📅" },
+            { "name": "Monthly Membership", "amount": "شهري", "price": 120, "popular": true, "icon": "🗓️" }
           ]
         }
       ]
@@ -87,31 +92,34 @@
     "categories": [
       {
         "name": "اسكربتات وبوتات",
+        "icon": "🤖",
         "products": [
-          { "name": "سكربت بوت واتساب", "amount": "بوت واتساب كامل", "price": 100, "popular": true },
-          { "name": "سكربت بوت تليجرام", "amount": "بوت تليجرام كامل", "price": 100, "popular": true },
-          { "name": "سكربت بوت ديسكورد", "amount": "بوت ديسكورد", "price": 120 },
-          { "name": "سكربت ترند الحب", "amount": "HTML ترند الحب", "price": 50, "popular": true },
-          { "name": "سكربت ترند عيد ميلاد", "amount": "HTML عيد ميلاد", "price": 50 },
-          { "name": "سكربت ترند رومانسي", "amount": "HTML رومانسي", "price": 60 },
-          { "name": "أداة برمجية جاهزة", "amount": "أداة حسب الطلب", "price": 80 }
+          { "name": "سكربت بوت واتساب", "amount": "بوت واتساب كامل", "price": 100, "popular": true, "icon": "🤖" },
+          { "name": "سكربت بوت تليجرام", "amount": "بوت تليجرام كامل", "price": 100, "popular": true, "icon": "✈️" },
+          { "name": "سكربت بوت ديسكورد", "amount": "بوت ديسكورد", "price": 120, "icon": "🎧" },
+          { "name": "سكربت ترند الحب", "amount": "HTML ترند الحب", "price": 50, "popular": true, "icon": "💘" },
+          { "name": "سكربت ترند عيد ميلاد", "amount": "HTML عيد ميلاد", "price": 50, "icon": "🎂" },
+          { "name": "سكربت ترند رومانسي", "amount": "HTML رومانسي", "price": 60, "icon": "💕" },
+          { "name": "أداة برمجية جاهزة", "amount": "أداة حسب الطلب", "price": 80, "icon": "🛠️" }
         ]
       },
       {
         "name": "مواقع وتطبيقات",
+        "icon": "🌐",
         "products": [
-          { "name": "صفحة هبوط (Landing Page)", "amount": "صفحة واحدة", "price": 200 },
-          { "name": "موقع متعدد الصفحات", "amount": "موقع كامل", "price": 500, "popular": true },
-          { "name": "متجر إلكتروني بسيط", "amount": "متجر كامل", "price": 800 },
-          { "name": "لوحة تحكم (Dashboard)", "amount": "Dashboard", "price": 600 }
+          { "name": "صفحة هبوط (Landing Page)", "amount": "صفحة واحدة", "price": 200, "icon": "📄" },
+          { "name": "موقع متعدد الصفحات", "amount": "موقع كامل", "price": 500, "popular": true, "icon": "🌐" },
+          { "name": "متجر إلكتروني بسيط", "amount": "متجر كامل", "price": 800, "icon": "🛒" },
+          { "name": "لوحة تحكم (Dashboard)", "amount": "Dashboard", "price": 600, "icon": "📊" }
         ]
       },
       {
         "name": "حسب الطلب",
+        "icon": "✨",
         "products": [
-          { "name": "أي خدمة برمجية", "amount": "حسب الطلب", "price": 0, "popular": true },
-          { "name": "تعديل على سكربت", "amount": "تعديل مخصص", "price": 0 },
-          { "name": "استشارة برمجية", "amount": "جلسة استشارية", "price": 0 }
+          { "name": "أي خدمة برمجية", "amount": "حسب الطلب", "price": 0, "popular": true, "icon": "✨" },
+          { "name": "تعديل على سكربت", "amount": "تعديل مخصص", "price": 0, "icon": "🔧" },
+          { "name": "استشارة برمجية", "amount": "جلسة استشارية", "price": 0, "icon": "💬" }
         ]
       }
     ]
